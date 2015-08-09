@@ -69,3 +69,15 @@
 1362986950 c:\users\christian\dropbox\arduino\codeblocks\arduino\hardware\arduino\variants\mega\pins_arduino.h
 	<avr/pgmspace.h>
 
+1439067764 source:c:\users\christian\desktop\tracking-system\lectura_dwm1000_receptor\lectura_dwm1000_receptor.ino
+	<Arduino.h>
+	<SPI.h>
+	<C:\Users\Christian\Desktop\tracking-system\dwm1000.h>
+
+1439067670 source:c:\users\christian\desktop\tracking-system\dwm1000.cpp
+	<Arduino.h>
+	<SPI.h>
+	<C:\Users\Christian\Desktop\tracking-system\dwm1000.h>
+
+1439058288 c:\users\christian\desktop\tracking-system\dwm1000.h
+

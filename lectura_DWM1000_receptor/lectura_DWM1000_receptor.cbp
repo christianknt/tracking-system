@@ -652,7 +652,7 @@
 			<Add directory="." />
 		</Compiler>
 		<Unit filename="../dwm1000.cpp" />
-		<Unit filename="dwm1000.h" />
+		<Unit filename="../dwm1000.h" />
 		<Unit filename="lectura_DWM1000_receptor.ino">
 			<Option compile="1" />
 			<Option link="1" />

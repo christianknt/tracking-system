@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include <dwm1000.h>
+#include <C:\Users\Christian\Desktop\tracking-system\dwm1000.h>
 
    //Declaracion de variables
     byte length;
@@ -30,11 +30,12 @@ void setup()
 
     //Configuro el Dwm1000
     getDevId();
-    getEUI();
+   // getEUI();
 }
 
 void loop()
 {
+
     control=readDwm1000(SYS_CTRL,0x01);
     control=control+0x01;
     writeDwm1000(SYS_CTRL,0x01,control);

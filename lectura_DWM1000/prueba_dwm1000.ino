@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include <dwm1000.h>
+#include <C:\Users\Christian\Desktop\tracking-system\dwm1000.h>
 
 long msg, aux;
 
@@ -27,16 +27,13 @@ void setup()
 
 void loop()
 {
-    Serial.print("SYS_STATUS: ");
-    Serial.println(readDwm1000(SYS_STATUS,0x00),BIN);
-
     if (configuracion==false)
     {
         //Imprimo en pantalla la identificacion del modulo
         configuracion=true;
         Serial.println("--");
         getDevId();
-        getEUI();
+       // getEUI();
 
     }
 

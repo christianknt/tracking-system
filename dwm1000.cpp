@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include <dwm1000.h>
+#include <C:\Users\Christian\Desktop\tracking-system\dwm1000.h>
 
 
 void getDevId()
@@ -128,7 +128,7 @@ void sendData(byte data[], byte length)
 
 }
 
-void receiveData(byte[127] buffer)
+void receiveData()
 {
 
 }

@@ -652,7 +652,7 @@
 			<Add directory="." />
 		</Compiler>
 		<Unit filename="../dwm1000.cpp" />
-		<Unit filename="dwm1000.h" />
+		<Unit filename="../dwm1000.h" />
 		<Unit filename="prueba_dwm1000.ino">
 			<Option compile="1" />
 			<Option link="1" />
