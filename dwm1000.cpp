@@ -44,10 +44,33 @@ void getEUI()
     Serial.println(".");
 }
 
-void writeDwm1000(int dir, word subDir, int data)
+
+uint16_t getAddress(byte type)
+{
+    uint16_t address=0;
+    uint16_t auxiliar=0; //Auxiliar variable
+
+    address=readDwm1000(PANADR,type); //Read first 8 bits of address 'type'
+    auxiliar=readDwm1000(PANADR,type+1);//Read last 8 bits of address 'type'
+    auxiliar=auxiliar<<8;
+    address=address+auxiliar;
+    return address;
+}
+
+void setAddress(byte type, uint16_t address)
+{
+    byte auxiliar=0; //Auxiliar variable
+    auxiliar=0x00FF&address; //Write first 8 bits of address on the 'type' register
+    writeDwm1000(PANADR,type,auxiliar);
+    auxiliar=0xFF00&address; //Write last 8 bits of address on the 'type' register
+    writeDwm1000(PANADR,type+1,auxiliar);
+}
+
+
+void writeDwm1000(uint8_t dir, uint16_t subDir, uint8_t data)
 {
     int byte1=0, byte2=0, byte3=0;
-    word aux;
+    uint16_t aux;
 
     if ((subDir>=0)&&(subDir<=0x7F))
     {
@@ -66,10 +89,10 @@ void writeDwm1000(int dir, word subDir, int data)
     {
         byte1=0b11000000+dir; //Indica escritura y que hay segundo octeto
 
-        byte2=0b000000001111111&subDir;
+        byte2=0b0000000001111111&subDir;
         byte2=byte2+0b10000000; //Indica que hay tercer octeto
 
-        aux=0b111111110000000&subDir;
+        aux=0b0111111110000000&subDir;
         aux=aux>>7;
         byte3=aux;
 
@@ -83,11 +106,12 @@ void writeDwm1000(int dir, word subDir, int data)
 }
 
 
-byte readDwm1000(int dir, word subDir)
+byte readDwm1000(uint8_t dir, uint16_t subDir)
 {
     int byte1=0, byte2=0, byte3=0;
-    word aux;
+    uint16_t aux;
     byte msg=0;
+
 
     if ((subDir>=0)&&(subDir<=0x7F))
     {
@@ -106,7 +130,7 @@ byte readDwm1000(int dir, word subDir)
         byte1=0b01000000+dir;
         byte2=0b000000001111111&subDir;
         byte2=byte2+0b10000000; //Indica que hay proximo octeto
-        aux=0b111111110000000&subDir;
+        aux=0b0111111110000000&subDir;
         aux=aux>>7;
         byte3=aux;
 
@@ -123,12 +147,124 @@ byte readDwm1000(int dir, word subDir)
 }
 
 
-void sendData(byte data[], byte length)
+void sendData(byte buffer[], int length)
 {
+    bool transmitido=false;
+    byte auxiliar, auxiliar2;
+    byte control;
+    int i;
+
+// Apago recepcion y transmision
+    writeDwm1000(SYS_CTRL,0x00,0b01000000);
+    /////////////////////////////////////
+
+//    Dato a enviar
+    for (i=0; i<length; i++)
+    {
+        writeDwm1000(TX_BUFFER,i,buffer[i]); //Copio los datos a enviar en el buffer de salida.
+    }
+//    Largo del dato a enviar
+    writeDwm1000(TX_FCTRL,0x00,length+2);
+
+//    Inicio transmision
+    writeDwm1000(SYS_CTRL,0x00,0b00000010);
+
+    transmitido=false;
+    while (transmitido==false)
+    {
+        auxiliar=readDwm1000(SYS_STATUS,0x00); //Leo el bit 7 (TXFRS)
+        if ((auxiliar&0b10000000)==128)
+        {
+            Serial.println("Data sent: OK");
+            writeDwm1000(SYS_STATUS,0x00,0b11111110); //Limpio las variables informativas
+            transmitido=true;
+        }
+        else
+        {
+            auxiliar=readDwm1000(SYS_STATUS,0x03);
+            if ((auxiliar&0b00010000)==16)
+            {
+                Serial.println("Error: Transmit Buffer Error");
+                writeDwm1000(SYS_STATUS,0x00,0b11111110); //Limpio las variables informativas
+                transmitido=false;
+                break;
+            }
+        }
+    }
+
+   // Apago recepcion y transmision
+    writeDwm1000(SYS_CTRL,0x00,0b01000000);
+    /////////////////////////////////////
+
 
 }
 
-void receiveData()
+void receiveData(byte buffer[])
 {
+    byte control;
+    bool leido=false;
+    bool error=false;
+    byte auxiliar, auxiliar2;
+    int i=0;
+    byte length;
 
+// Apago recepcion y transmision
+    writeDwm1000(SYS_CTRL,0x00,0b01000000);
+    /////////////////////////////////////
+
+
+    //Habilito la recepcion
+    control=readDwm1000(SYS_CTRL,0x01);
+    control=(control&0b11111110)+0x01;
+    writeDwm1000(SYS_CTRL,0x01,control);
+
+    //Espero a recibir algun dato
+    leido=false;
+    while (leido==false)
+    {
+        auxiliar=readDwm1000(SYS_STATUS,0x01);
+        auxiliar2=readDwm1000(SYS_STATUS,0x02);
+
+        if ((auxiliar&0b00100000)==32) //Leo el bit 13 (RXDFR)
+        {
+            Serial.println("Data received: OK");
+            leido=true; //Si recibo dato, salgo del while
+        }
+        else
+        {
+            if ((auxiliar&0b00010000)==16) //RXPHE
+            {
+                Serial.println("Error: Receiver PHY header Error");
+                leido=false;
+                break; //Si recibo dato incorrecto, salgo del while
+            }
+            else
+            {
+                if ((auxiliar2&0b00010000)==16) //RXOVRR Receiver Overrun
+                {
+                    Serial.println("Error: Receiver Overrun");
+                    leido=false;
+                    break; //Si recibo dato incorrecto, salgo del while
+                }
+            }
+        }
+    }
+
+   // Apago recepcion y transmision
+    control=0b01000000;
+    writeDwm1000(SYS_CTRL,0x00,control);
+    /////////////////////////////////////
+
+    //Leo extension del dato recibido
+    length=readDwm1000(RX_FINFO,0x00);
+    length=length&0b01111111;
+
+    for (i=0; i<length; i++)
+    {
+        buffer[i]=readDwm1000(RX_BUFFER,i); //Leo el byte i, del buffer de recepcion
+    }
+
+
+//    Serial.print("Tiempo RX: ");
+//    Serial.println(readDwm1000(RX_TIME,0x00));
 }
