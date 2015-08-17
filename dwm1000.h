@@ -20,9 +20,19 @@
 #define SHORT_ADDR 0
 #define PAN_ID 2
 
+// Time resolution in micro-seconds of time based registers/values.
+// Each bit in a timestamp counts for a period of approx. 15.65ps
+#define TIME_RES 0.000015650040064103f
+
+#define SPEED_OF_LIGHT 300 //Speed of radio waves in vacuum[m/us]
+
+// Speed of radio waves [m/s] * timestamp resolution [~15.65ps] of DW1000
+#define DISTANCE_OF_RADIO 0.0046917639786159f
 
 void writeDwm1000(uint8_t dir, uint16_t subDir, uint8_t data);
 byte readDwm1000(uint8_t dir, uint16_t subDir);
+
+void loadLDE();
 
 void getDevId();
 void getEUI(); //Return the EUI value

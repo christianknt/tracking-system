@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <C:\Users\Christian\Desktop\tracking-system\dwm1000.h>
-
+#include <math.h>
 
 byte buffer[127];
 
@@ -20,8 +20,7 @@ void setup()
     SPI.begin();
 
     //Cargo desde la memoria OTP la informacion a la RAM
-    writeDwm1000(OTP_IF,0x07,0b10000000); //Cargo info desde la memoria OTP
-    delayMicroseconds(150);
+    loadLDE();
 
     getDevId();
     buffer[0]=0x0D;
@@ -34,6 +33,8 @@ void setup()
     setAddress(SHORT_ADDR,0x000A);
     Serial.print("Short Address - ");
     Serial.println(getAddress(SHORT_ADDR),HEX);
+
+    setAddress(PAN_ID,0xDECC);
 
     // Apago recepcion y transmision
     writeDwm1000(SYS_CTRL,0x00,0b01000000);

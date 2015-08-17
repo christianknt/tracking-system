@@ -29,19 +29,20 @@ void getDevId()
 void getEUI()
 {
     int i=0;
-    uint64_t EUI_leido=0;
+    uint64_t EUI_leido=0, aux2=0;
     int aux=0;
 
     Serial.print("EUI: ");
     for (i=0; i<8; i++)
     {
         aux=readDwm1000(EUI,i);
-        Serial.print(aux,DEC);
+        aux2=aux<<(i*8);
+        EUI_leido=EUI_leido+aux2;
+        Serial.print(aux);
         Serial.print(".");
-        //aux=aux<<(i*8);
-        //EUI_leido=EUI_leido+aux;
     }
-    Serial.println(".");
+    Serial.println("\n");
+
 }
 
 
@@ -52,17 +53,16 @@ uint16_t getAddress(byte type)
 
     address=readDwm1000(PANADR,type); //Read first 8 bits of address 'type'
     auxiliar=readDwm1000(PANADR,type+1);//Read last 8 bits of address 'type'
-    auxiliar=auxiliar<<8;
-    address=address+auxiliar;
+    address=address+(auxiliar<<8);
     return address;
 }
 
 void setAddress(byte type, uint16_t address)
 {
-    byte auxiliar=0; //Auxiliar variable
+    uint16_t auxiliar=0; //Auxiliar variable
     auxiliar=0x00FF&address; //Write first 8 bits of address on the 'type' register
     writeDwm1000(PANADR,type,auxiliar);
-    auxiliar=0xFF00&address; //Write last 8 bits of address on the 'type' register
+    auxiliar=(0xFF00&address)>>8; //Write last 8 bits of address on the 'type' register
     writeDwm1000(PANADR,type+1,auxiliar);
 }
 
@@ -207,6 +207,8 @@ void receiveData(byte buffer[])
     byte auxiliar, auxiliar2;
     int i=0;
     byte length;
+    uint32_t TOF=0, auxiliar3=0;
+    float distance;
 
 // Apago recepcion y transmision
     writeDwm1000(SYS_CTRL,0x00,0b01000000);
@@ -264,7 +266,27 @@ void receiveData(byte buffer[])
         buffer[i]=readDwm1000(RX_BUFFER,i); //Leo el byte i, del buffer de recepcion
     }
 
+//Calculo la distancia entre los dos moviles
+    TOF=0;
+    auxiliar3=0;
+    for (i=0; i<3; i++)
+    {
+        auxiliar=readDwm1000(RX_TIME,i);
+        auxiliar3=auxiliar<<(i*8);
+        TOF=TOF+auxiliar3;
+    }
+    distance=TIME_RES*TOF;
+    distance=distance*SPEED_OF_LIGHT;
+//    Serial.print("Distance: ");
+//    Serial.println(distance);
 
-//    Serial.print("Tiempo RX: ");
-//    Serial.println(readDwm1000(RX_TIME,0x00));
+}
+
+void loadLDE()
+{
+     //Cargo desde la memoria OTP la informacion a la RAM
+    writeDwm1000(PMSC,0x00,0x01);
+    writeDwm1000(OTP_IF,0x07,0b10000000); //Cargo info desde la memoria OTP
+    delayMicroseconds(200);
+    writeDwm1000(PMSC,0x00,0x00);
 }
