@@ -284,9 +284,70 @@ void receiveData(byte buffer[])
 
 void loadLDE()
 {
-     //Cargo desde la memoria OTP la informacion a la RAM
+     //Loading information from ROM to RAM memory
     writeDwm1000(PMSC,0x00,0x01);
-    writeDwm1000(OTP_IF,0x07,0b10000000); //Cargo info desde la memoria OTP
+    writeDwm1000(OTP_IF,0x07,0b10000000); //Information is loaded from OTP memory
     delayMicroseconds(200);
     writeDwm1000(PMSC,0x00,0x00);
+}
+
+uint16_t buildFrameControl(byte frameType, byte destinationMode, byte sourceMode)
+{
+    uint16_t FRAMECONTROL=0, auxiliar=0;
+    //Bit 0,1 and 2 indicates frame type, Frame type is configured according to data type
+    FRAMECONTROL=FRAMECONTROL+frameType;
+
+    //Bit 3 (security enable) remains in zero value indicating there is no security process
+
+    //Bit 4 indicates the sending device has more data for the recipient
+
+    //Bit 5 -- ACK request
+
+    //Bit 6 - PAN ID compress
+
+    //Bit 10 & 11 - Destination Address Mode
+    auxiliar=destinationMode;
+    auxiliar=auxiliar<<10;
+    FRAMECONTROL=FRAMECONTROL+auxiliar;
+
+    //Bit 12 & 13 - Frame Version - 0 due to DW1000 version
+
+    //Bit 14 & 15 - Source address mode
+    auxiliar=sourceMode;
+    auxiliar=auxiliar<<14;
+    FRAMECONTROL=FRAMECONTROL+auxiliar;
+
+    return FRAMECONTROL;
+}
+
+void buildMACMessage(byte buffer[])
+{
+    uint16_t frameControl=0;
+    uint8_t sequenceNumber=0;
+
+    frameControl=buildFrameControl(DATA, DESTINATION_SHORT, SOURCE_SHORT);
+    buffer[0]=frameControl&0x00FF;
+    buffer[1]=(frameControl&0xFF00)>>8;
+    buffer[2]=sequenceNumber;
+
+    //Destination PAN identifier
+    buffer[3]=0xCA;
+    buffer[4]=0xDE;
+
+    //Destination Short Address
+    buffer[5]=0x0A;
+    buffer[6]=0x00;
+
+    //Source PAN identifier
+    buffer[7]=0xCA;
+    buffer[8]=0xDE;
+
+    //Source Short Address
+    buffer[9]=0x0B;
+    buffer[10]=0x00;
+
+    //datos
+    buffer[11]=0xCA;
+    buffer[12]=0xCA;
+
 }

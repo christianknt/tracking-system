@@ -34,27 +34,38 @@ void setup()
     Serial.print("Short Address - ");
     Serial.println(getAddress(SHORT_ADDR),HEX);
 
-    setAddress(PAN_ID,0xDECC);
+    setAddress(PAN_ID,0xDECA);
 
     // Apago recepcion y transmision
     writeDwm1000(SYS_CTRL,0x00,0b01000000);
+
     /////////////////////////////////////
+    writeDwm1000(SYS_CFG,0x00,0b00001001);
 }
 
 void loop()
 {
     int i=0;
+//
+//    sendData(buffer,7);
+//    receiveData(buffer);
+//
+//    Serial.print("Dato recibido: ");
+//    for (i=0; i<7; i++)
+//    {
+//        Serial.print(buffer[i],HEX);
+//    }
+//    Serial.println(" ");
+//    delay(1000);
 
-    sendData(buffer,7);
     receiveData(buffer);
 
     Serial.print("Dato recibido: ");
-    for (i=0; i<7; i++)
+    for (i=0; i<14; i++)
     {
         Serial.print(buffer[i],HEX);
     }
     Serial.println(" ");
-    delay(1000);
 }
 
 

@@ -41,18 +41,24 @@ void setup()
 void loop()
 {
     int i;
+    //uint16_t framecontrol=buildFrameControl(DATA, DESTINATION_SHORT, SOURCE_SHORT);
 
-    receiveData(buffer);
-    Serial.print("Dato recibido: ");
-     for (i=0; i<7; i++)
-    {
-        Serial.print(buffer[i],HEX);
-    }
-    Serial.println(" ");
-    buffer[4]=buffer[4]+1;
+//    receiveData(buffer);
+//    Serial.print("Dato recibido: ");
+//     for (i=0; i<7; i++)
+//    {
+//        Serial.print(buffer[i],HEX);
+//    }
+//    Serial.println(" ");
+//    buffer[4]=buffer[4]+1;
+//    delay(1000);
+//    sendData(buffer,7);
+//    Serial.println("\n");
+
+    delay(10);
+    buildMACMessage(buffer);
+    sendData(buffer,13);
     delay(1000);
-    sendData(buffer,7);
-    Serial.println("\n");
 
 }
 
